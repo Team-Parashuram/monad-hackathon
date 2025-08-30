@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import QRCodeGenerator from './QRCodeGenerator'
 import { COMMON_TOKENS } from '@/app/contracts'
+import { CheckCircle2, Copy, ExternalLink, Gem } from 'lucide-react'
 
 interface PaymentFormProps {
   merchantAddress: string
@@ -76,16 +77,16 @@ const PaymentForm = ({ merchantAddress }: PaymentFormProps) => {
   }
 
   return (
-    <div className="space-y-6">
-      <form onSubmit={handleGenerateLink} className="space-y-4">
+    <div className="space-y-4 sm:space-y-6">
+      <form onSubmit={handleGenerateLink} className="space-y-3 sm:space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Token
           </label>
           <select
             value={selectedToken}
             onChange={(e) => setSelectedToken(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-yellow-500 text-sm sm:text-base"
           >
             <option value="MON">MON - Monad</option>
             <option value="ETH">ETH - Ethereum</option>
@@ -95,7 +96,7 @@ const PaymentForm = ({ merchantAddress }: PaymentFormProps) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Amount
           </label>
           <input
@@ -105,7 +106,7 @@ const PaymentForm = ({ merchantAddress }: PaymentFormProps) => {
             placeholder="0.00"
             step="0.000001"
             min="0"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-yellow-500 text-sm sm:text-base"
             required
           />
         </div>
@@ -113,62 +114,82 @@ const PaymentForm = ({ merchantAddress }: PaymentFormProps) => {
         <button
           type="submit"
           disabled={isLoading || !amount}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-2 px-4 rounded-md transition-colors"
+          className="w-full bg-orange-200 hover:bg-orange-300 dark:bg-yellow-500 dark:hover:bg-yellow-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 text-white py-2.5 sm:py-3 px-4 rounded-md transition-colors font-medium shadow-md text-sm sm:text-base"
         >
           {isLoading ? 'Generating...' : 'Generate Payment Link'}
         </button>
       </form>
 
       {generatedLink && (
-        <div className="mt-6 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-          <div className="flex items-center mb-4">
-            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+        <div className="mt-6 sm:mt-8 p-6 sm:p-8 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 relative overflow-hidden">
+          <div className="flex items-center mb-6">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-orange-300 dark:bg-yellow-500 rounded-lg flex items-center justify-center mr-4 shadow-lg">
+              <CheckCircle2 className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
             </div>
-            <h4 className="font-semibold text-green-800">Payment Link Generated!</h4>
+            <div>
+              <h4 className="font-bold text-orange-300 dark:text-yellow-600 text-lg sm:text-xl">Payment Link Generated!</h4>
+              <p className="text-orange-300 dark:text-yellow-500 text-sm">Ready to share with your customers</p>
+            </div>
           </div>
           
-          <div className="space-y-4">
-            <div className="bg-white p-3 rounded-md">
-              <p className="text-sm font-medium text-gray-700 mb-1">Payment Details:</p>
-              <p className="text-lg font-semibold text-gray-900">
-                {generatedLink.amount} {generatedLink.tokenSymbol}
-              </p>
-              <p className="text-sm text-gray-600">
-                To: {merchantAddress.slice(0, 8)}...{merchantAddress.slice(-6)}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">Share Payment Link:</p>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="text"
-                  value={generatedLink.link}
-                  readOnly
-                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white font-mono"
-                />
-                <button
-                  onClick={() => copyToClipboard(generatedLink.link)}
-                  className={`px-4 py-2 text-sm rounded-md transition-colors ${
-                    copied 
-                      ? 'bg-green-600 text-white' 
-                      : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}
-                >
-                  {copied ? 'Copied!' : 'Copy'}
-                </button>
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-gray-700">
+              <p className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Payment Details:</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {generatedLink.amount} {generatedLink.tokenSymbol}
+                  </p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                    To: {merchantAddress.slice(0, 8)}...{merchantAddress.slice(-6)}
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-orange-300 dark:bg-yellow-500 rounded-lg flex items-center justify-center">
+                  <Gem className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
 
             <div>
-              <QRCodeGenerator 
-                value={generatedLink.link} 
-                title="Scan to Pay"
-                size={200}
-              />
+              <p className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Share Payment Link:</p>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
+                <input
+                  type="text"
+                  value={generatedLink.link}
+                  readOnly
+                  className="flex-1 px-4 py-3 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-mono focus:border-orange-500 dark:focus:border-yellow-500 transition-colors"
+                />
+                <button
+                  onClick={() => copyToClipboard(generatedLink.link)}
+                  className={`px-6 py-3 text-xs sm:text-sm rounded-lg font-semibold transition-all duration-300 whitespace-nowrap shadow-lg ${
+                    copied 
+                      ? 'bg-orange-200 text-white' 
+                      : 'bg-orange-200 hover:bg-orange-300 dark:bg-yellow-500 dark:hover:bg-yellow-600 text-white'
+                  }`}
+                >
+                  {copied ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 mr-2 inline" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4 mr-2 inline" />
+                      Copy
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                <QRCodeGenerator 
+                  value={generatedLink.link} 
+                  title="Scan to Pay"
+                  size={160}
+                />
+              </div>
             </div>
 
             <div className="text-center">
@@ -176,11 +197,9 @@ const PaymentForm = ({ merchantAddress }: PaymentFormProps) => {
                 href={generatedLink.link}
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium transition-colors"
+                className="inline-flex items-center px-6 py-3 bg-orange-200 hover:bg-orange-300 dark:bg-yellow-500 dark:hover:bg-yellow-600 text-white rounded-lg text-sm sm:text-base font-semibold transition-all duration-300 shadow-lg"
               >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
+                <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 Test Payment Link
               </a>
             </div>

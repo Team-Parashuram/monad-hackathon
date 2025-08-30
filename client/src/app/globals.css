@@ -120,3 +120,47 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Professional Enhancement Styles */
+@layer components {
+  .bg-grid-pattern {
+    background-image: 
+      linear-gradient(rgba(249, 115, 22, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(249, 115, 22, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  
+  .dark .bg-grid-pattern {
+    background-image: 
+      linear-gradient(rgba(251, 191, 36, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(251, 191, 36, 0.08) 1px, transparent 1px);
+  }
+  
+  /* Professional glow effects */
+  .glow-effect {
+    box-shadow: 0 4px 20px rgba(249, 115, 22, 0.1);
+  }
+  
+  .dark .glow-effect {
+    box-shadow: 0 4px 20px rgba(251, 191, 36, 0.15);
+  }
+  
+  /* Remove all unnecessary animations */
+  .no-tilt * {
+    transform: none !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease !important;
+  }
+  
+  /* Professional button styles */
+  .btn-professional {
+    @apply px-6 py-3 rounded-lg font-semibold transition-all duration-200;
+  }
+  
+  .btn-professional-light {
+    @apply bg-orange-300 hover:bg-orange-400 text-white;
+  }
+  
+  .btn-professional-dark {
+    @apply bg-yellow-500 hover:bg-yellow-600 text-black;
+  }
+}
