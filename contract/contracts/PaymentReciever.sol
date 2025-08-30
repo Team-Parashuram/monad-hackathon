@@ -8,15 +8,10 @@ interface IERC20 {
 contract PaymentReceiver {
     event PaymentReceived(address indexed merchant, address indexed payer, address token, uint256 amount);
 
-    function pay(address merchant, address token, uint256 amount) external payable {
-        if (token == address(0)) {
-            // Native token (ETH/Monad)
-            require(msg.value == amount, "Incorrect value sent");
-            payable(merchant).transfer(amount);
-        } else {
-            // ERC20 token
-            require(IERC20(token).transferFrom(msg.sender, merchant, amount), "ERC20 transfer failed");
-        }
+    function pay(address merchant, address token, uint256 amount) external {
+        // Only for ERC20 tokens
+        require(token != address(0), "Native token not supported here");
+        require(IERC20(token).transferFrom(msg.sender, merchant, amount), "ERC20 transfer failed");
 
         emit PaymentReceived(merchant, msg.sender, token, amount);
     }

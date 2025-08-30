@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSwitchChain } from 'wagmi'
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSwitchChain, useSendTransaction } from 'wagmi'
 import { parseEther, parseUnits, formatEther, formatUnits } from 'viem'
 import { WalletOptions } from '@/components/WalletOptions'
 import { CONTRACT_CONFIG, COMMON_TOKENS } from '@/app/contracts'
@@ -19,6 +19,7 @@ interface PaymentRequest {
 
 export default function PaymentPage() {
   const params = useParams()
+  const { sendTransactionAsync } = useSendTransaction()
   const paymentId = params.id as string
   const { address, isConnected, chain } = useAccount()
   const { switchChain } = useSwitchChain()
@@ -119,7 +120,6 @@ useEffect(() => {
 
 const handlePay = async () => {
   if (!paymentRequest || !address) return
-
   if (!isOnCorrectNetwork) {
     setErrorMessage('Please switch to the correct network first.')
     return
@@ -130,21 +130,26 @@ const handlePay = async () => {
   setErrorMessage('')
 
   try {
-    
     const tokenSymbol = paymentRequest.tokenSymbol
     const tokenEntry = Object.values(COMMON_TOKENS).find(
       (t) => t.symbol === tokenSymbol || t.address.toLowerCase() === paymentRequest.token.toLowerCase()
     )
     const decimals = tokenEntry ? tokenEntry.decimals : 18
-
     const amount: bigint = parseUnits(paymentRequest.amount, decimals)
 
-    // If ERC20 (non-native), first send approve to the PaymentReceiver contract
     const isNative = tokenSymbol === 'ETH' || tokenSymbol === 'MON'
-    if (!isNative) {
+
+    if (isNative) {
+      // 🚀 Direct native transfer (no contract)
+      await sendTransactionAsync({
+        to: paymentRequest.merchantAddress as `0x${string}`,
+        value: amount,
+      })
+    } else {
+      // 🔗 ERC20 → approve + contract.pay
       try {
         await writeContract({
-          address: paymentRequest.token as `0x${string}`, // ERC20 token contract
+          address: paymentRequest.token as `0x${string}`,
           abi: ERC20_ABI as any,
           functionName: 'approve',
           args: [CONTRACT_CONFIG.PAYMENT_RECEIVER_ADDRESS as `0x${string}`, amount],
@@ -156,18 +161,18 @@ const handlePay = async () => {
         setIsLoading(false)
         return
       }
+
+      await writeContract({
+        address: CONTRACT_CONFIG.PAYMENT_RECEIVER_ADDRESS as `0x${string}`,
+        abi: CONTRACT_CONFIG.PAYMENT_RECEIVER_ABI,
+        functionName: 'pay',
+        args: [
+          paymentRequest.merchantAddress as `0x${string}`,
+          paymentRequest.token as `0x${string}`,
+          amount,
+        ],
+      })
     }
-    await writeContract({
-      address: CONTRACT_CONFIG.PAYMENT_RECEIVER_ADDRESS as `0x${string}`,
-      abi: CONTRACT_CONFIG.PAYMENT_RECEIVER_ABI,
-      functionName: 'pay',
-      args: [
-        paymentRequest.merchantAddress as `0x${string}`,
-        paymentRequest.token as `0x${string}`,
-        amount
-      ],
-      value: isNative ? amount : BigInt(0),
-    })
   } catch (error: any) {
     console.error('Payment error:', error)
     setPaymentStatus('error')
@@ -176,7 +181,6 @@ const handlePay = async () => {
     setIsLoading(false)
   }
 }
-
 
   if (!paymentRequest) {
     return (
@@ -285,9 +289,6 @@ const handlePay = async () => {
                   </svg>
                   <span className="font-medium text-yellow-800">Wrong Network</span>
                 </div>
-                <p className="text-sm text-yellow-700 mb-3">
-                  Please switch to Localhost (for testing) to complete this payment.
-                </p>
                 <button
                   onClick={handleNetworkSwitch}
                   className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-md text-sm"
