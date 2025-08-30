@@ -585,24 +585,64 @@ const Home: FC = () => {
       <Navigation isConnected={isConnected} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 relative z-10">
-        {/* Demo Video Section */}
-        <section className="flex justify-center mb-16 sm:mb-20">
-          <div className="relative">
-            <div className="w-[280px] h-[498px] sm:w-[320px] sm:h-[568px] rounded-3xl overflow-hidden shadow-2xl border-4 border-gray-800 dark:border-gray-200 bg-black">
-              <iframe
-                src="https://www.youtube.com/embed/qSUIc4ahtkA?si=vJax2j1P6zGbyuOn&autoplay=0&mute=1&controls=1&rel=0&showinfo=0"
-                title="MonadPe Demo"
-                className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+        {/* Hero Section with Video and Content Side by Side */}
+        <section className="mb-16 sm:mb-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            {/* Video Section - Left */}
+            <div className="flex justify-center lg:justify-start order-1 lg:order-1">
+              <div className="relative">
+                <div className="w-[280px] h-[498px] sm:w-[320px] sm:h-[568px] rounded-3xl overflow-hidden shadow-2xl border-4 border-gray-800 dark:border-gray-200 bg-black">
+                  <iframe
+                    src="https://www.youtube.com/embed/qSUIc4ahtkA?si=vJax2j1P6zGbyuOn&autoplay=0&mute=1&controls=1&rel=0&showinfo=0"
+                    title="MonadPe Demo"
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+                <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-orange-500 rounded-full animate-pulse" />
+                <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-500 rounded-full animate-pulse delay-500" />
+              </div>
             </div>
-            <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-orange-500 rounded-full animate-pulse" />
-            <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-500 rounded-full animate-pulse delay-500" />
+
+            {/* Content Section - Right */}
+            <div className="text-center lg:text-left order-2 lg:order-2 py-12">
+              <div className="flex items-center justify-center lg:justify-start gap-4 mb-8">
+                <div className="w-12 h-12 bg-orange-300 dark:bg-yellow-500 rounded-xl flex items-center justify-center">
+                  <Coins className="w-7 h-7 text-white dark:text-black" />
+                </div>
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 dark:text-white">
+                  MonadPe
+                </h1>
+              </div>
+              
+              <div className="mb-8">
+                <p className="text-xl sm:text-2xl lg:text-3xl mb-4 font-bold text-gray-800 dark:text-gray-200">
+                  The Future of Crypto Payments
+                </p>
+                <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-6">
+                  Built on <span className="font-bold text-orange-300 dark:text-yellow-500">Monad</span> • Lightning Fast • Zero Fees
+                </p>
+                <p className="text-base lg:text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                  Accept payments in <span className="font-semibold text-orange-300 dark:text-yellow-500">ETH, MON, USDC, and USDT</span> with just a link. 
+                  No complex setup, no hidden fees, no hassle.
+                </p>
+              </div>
+
+              {!isConnected && (
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
+                  <Button className="bg-orange-300 hover:bg-orange-400 dark:bg-yellow-500 dark:hover:bg-yellow-600 text-white dark:text-black font-bold py-4 px-8 rounded-lg shadow-lg transition-all duration-300 text-lg border-0">
+                    Get Started Now
+                    <Rocket className="w-5 h-5 ml-2" />
+                  </Button>
+                  <Button variant="outline" className="border-2 border-gray-300 dark:border-gray-600 hover:border-orange-500 dark:hover:border-yellow-500 py-4 px-8 rounded-lg font-semibold text-lg transition-all duration-300">
+                    Learn More
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </section>
-        
-        <HeroSection isConnected={isConnected} />
         
         <WalletConnectionCard isConnected={isConnected} />
         
