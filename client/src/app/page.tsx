@@ -585,6 +585,23 @@ const Home: FC = () => {
       <Navigation isConnected={isConnected} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 relative z-10">
+        {/* Demo Video Section */}
+        <section className="flex justify-center mb-16 sm:mb-20">
+          <div className="relative">
+            <div className="w-[280px] h-[498px] sm:w-[320px] sm:h-[568px] rounded-3xl overflow-hidden shadow-2xl border-4 border-gray-800 dark:border-gray-200 bg-black">
+              <iframe
+                src="https://www.youtube.com/embed/qSUIc4ahtkA?si=vJax2j1P6zGbyuOn&autoplay=0&mute=1&controls=1&rel=0&showinfo=0"
+                title="MonadPe Demo"
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+            <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-orange-500 rounded-full animate-pulse" />
+            <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-500 rounded-full animate-pulse delay-500" />
+          </div>
+        </section>
+        
         <HeroSection isConnected={isConnected} />
         
         <WalletConnectionCard isConnected={isConnected} />
