@@ -631,8 +631,7 @@ const Home: FC = () => {
             />
           </div>
         </section>
-        
-        {/* Professional Features Section */}
+
         <section className="mb-16 sm:mb-20">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 bg-orange-100 dark:bg-yellow-500/20 rounded-lg px-6 py-3 mb-6 border border-orange-200 dark:border-yellow-500/30">
