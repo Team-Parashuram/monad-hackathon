@@ -33,23 +33,65 @@ export default function PaymentPage() {
     hash,
   })
 
-  // Check if we're on the correct network
   const isOnCorrectNetwork = process.env.NEXT_PUBLIC_NETWORK_MODE === "production" 
     ? chain?.id === monadTestnet.id 
     : chain?.id === localhost.id || chain?.id === monadTestnet.id
-
-  useEffect(() => {
-    const storedRequest = localStorage.getItem(`payment_${paymentId}`)
-    if (storedRequest) {
-      setPaymentRequest(JSON.parse(storedRequest))
-    }
-  }, [paymentId])
 
   useEffect(() => {
     if (isConfirmed) {
       setPaymentStatus('success')
     }
   }, [isConfirmed])
+
+
+useEffect(() => {
+  try {
+    const storedRequest = localStorage.getItem(`payment_${paymentId}`)
+    if (storedRequest) {
+      setPaymentRequest(JSON.parse(storedRequest))
+      return
+    }
+  } catch (err) {
+    console.warn('localStorage read failed', err)
+  }
+
+  try {
+    const search = typeof window !== 'undefined' ? window.location.search : ''
+    if (search) {
+      const params = new URLSearchParams(search)
+      const merchant = params.get('merchant')
+      const amount = params.get('amount')
+      const token = params.get('token')
+      const tokenSymbol = params.get('tokenSymbol')
+
+      if (merchant && amount && token && tokenSymbol) {
+        setPaymentRequest({
+          id: paymentId,
+          amount,
+          token,
+          tokenSymbol,
+          merchantAddress: merchant,
+          link: window.location.href
+        })
+        return
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to parse URL params', err)
+  }
+}, [paymentId])
+
+useEffect(() => {
+  if (isConfirmed) {
+    setPaymentStatus('success')
+    try {
+      localStorage.removeItem(`payment_${paymentId}`)
+    } catch (err) {
+      console.warn('Failed to clear localStorage', err)
+    }
+  }
+}, [isConfirmed, paymentId])
+
 
   const handleNetworkSwitch = async () => {
     try {
@@ -61,48 +103,80 @@ export default function PaymentPage() {
     }
   }
 
-  const handlePay = async () => {
-    if (!paymentRequest || !address) return
-
-    if (!isOnCorrectNetwork) {
-      setErrorMessage('Please switch to the correct network first.')
-      return
-    }
-
-    setIsLoading(true)
-    setPaymentStatus('pending')
-    setErrorMessage('')
-
-    try {
-      let amount: bigint
-      
-      if (paymentRequest.tokenSymbol === 'ETH' || paymentRequest.tokenSymbol === 'MON') {
-        amount = parseEther(paymentRequest.amount)
-      } else {
-        // For USDC/USDT (6 decimals)
-        amount = parseUnits(paymentRequest.amount, 6)
-      }
-
-      await writeContract({
-        address: CONTRACT_CONFIG.PAYMENT_RECEIVER_ADDRESS as `0x${string}`,
-        abi: CONTRACT_CONFIG.PAYMENT_RECEIVER_ABI,
-        functionName: 'pay',
-        args: [
-          paymentRequest.merchantAddress as `0x${string}`,
-          paymentRequest.token as `0x${string}`,
-          amount
-        ],
-        value: (paymentRequest.tokenSymbol === 'ETH' || paymentRequest.tokenSymbol === 'MON') ? amount : BigInt(0),
-      })
-
-    } catch (error: any) {
-      console.error('Payment error:', error)
-      setPaymentStatus('error')
-      setErrorMessage(error?.message || 'Transaction failed. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
+ const ERC20_ABI = [
+  // minimal ABI for approve
+  {
+    "constant": false,
+    "inputs": [
+      { "name": "spender", "type": "address" },
+      { "name": "amount", "type": "uint256" }
+    ],
+    "name": "approve",
+    "outputs": [{ "name": "", "type": "bool" }],
+    "type": "function"
   }
+];
+
+const handlePay = async () => {
+  if (!paymentRequest || !address) return
+
+  if (!isOnCorrectNetwork) {
+    setErrorMessage('Please switch to the correct network first.')
+    return
+  }
+
+  setIsLoading(true)
+  setPaymentStatus('pending')
+  setErrorMessage('')
+
+  try {
+    
+    const tokenSymbol = paymentRequest.tokenSymbol
+    const tokenEntry = Object.values(COMMON_TOKENS).find(
+      (t) => t.symbol === tokenSymbol || t.address.toLowerCase() === paymentRequest.token.toLowerCase()
+    )
+    const decimals = tokenEntry ? tokenEntry.decimals : 18
+
+    const amount: bigint = parseUnits(paymentRequest.amount, decimals)
+
+    // If ERC20 (non-native), first send approve to the PaymentReceiver contract
+    const isNative = tokenSymbol === 'ETH' || tokenSymbol === 'MON'
+    if (!isNative) {
+      try {
+        await writeContract({
+          address: paymentRequest.token as `0x${string}`, // ERC20 token contract
+          abi: ERC20_ABI as any,
+          functionName: 'approve',
+          args: [CONTRACT_CONFIG.PAYMENT_RECEIVER_ADDRESS as `0x${string}`, amount],
+        })
+      } catch (err: any) {
+        console.error('Approve failed:', err)
+        setPaymentStatus('error')
+        setErrorMessage('Approval failed or was rejected.')
+        setIsLoading(false)
+        return
+      }
+    }
+    await writeContract({
+      address: CONTRACT_CONFIG.PAYMENT_RECEIVER_ADDRESS as `0x${string}`,
+      abi: CONTRACT_CONFIG.PAYMENT_RECEIVER_ABI,
+      functionName: 'pay',
+      args: [
+        paymentRequest.merchantAddress as `0x${string}`,
+        paymentRequest.token as `0x${string}`,
+        amount
+      ],
+      value: isNative ? amount : BigInt(0),
+    })
+  } catch (error: any) {
+    console.error('Payment error:', error)
+    setPaymentStatus('error')
+    setErrorMessage(error?.message || 'Transaction failed. Please try again.')
+  } finally {
+    setIsLoading(false)
+  }
+}
+
 
   if (!paymentRequest) {
     return (

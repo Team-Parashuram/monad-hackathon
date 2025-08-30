@@ -30,34 +30,39 @@ const PaymentForm = ({ merchantAddress }: PaymentFormProps) => {
 
     setIsLoading(true)
     
-    try {
-      const paymentId = uuidv4()
-      const tokenData = selectedToken === 'ETH' ? COMMON_TOKENS.ETH : 
-                       selectedToken === 'MON' ? COMMON_TOKENS.MON :
-                       selectedToken === 'USDC' ? COMMON_TOKENS.USDC : 
-                       selectedToken === 'USDT' ? COMMON_TOKENS.USDT :
-                       COMMON_TOKENS.ETH // fallback
+   try {
+  const paymentId = uuidv4()
+  const tokenData = selectedToken === 'MON' ? COMMON_TOKENS.MON :
+                    selectedToken === 'ETH' ? COMMON_TOKENS.ETH :
+                    selectedToken === 'USDC' ? COMMON_TOKENS.USDC :
+                    selectedToken === 'USDT' ? COMMON_TOKENS.USDT :
+                    COMMON_TOKENS.ETH // fallback
+                    
+  const params = new URLSearchParams({
+          merchant: merchantAddress,
+          amount,
+          token: tokenData.address,
+          tokenSymbol: tokenData.symbol,
+        }).toString()
 
-      const link = `${window.location.origin}/pay/${paymentId}`
-      
-      const paymentLink: PaymentLink = {
-        id: paymentId,
-        amount,
-        token: tokenData.address,
-        tokenSymbol: tokenData.symbol,
-        merchantAddress,
-        link
+        const link = `${window.location.origin}/pay/${paymentId}?${params}`
+
+        const paymentLink: PaymentLink = {
+          id: paymentId,
+          amount,
+          token: tokenData.address,
+          tokenSymbol: tokenData.symbol,
+          merchantAddress,
+          link
+        }
+        localStorage.setItem(`payment_${paymentId}`, JSON.stringify(paymentLink))
+
+        setGeneratedLink(paymentLink)
+      } catch (error) {
+        console.error('Error generating payment link:', error)
+      } finally {
+        setIsLoading(false)
       }
-
-      // Store payment request in localStorage for demo (in real app, store in database)
-      localStorage.setItem(`payment_${paymentId}`, JSON.stringify(paymentLink))
-      
-      setGeneratedLink(paymentLink)
-    } catch (error) {
-      console.error('Error generating payment link:', error)
-    } finally {
-      setIsLoading(false)
-    }
   }
 
   const copyToClipboard = async (text: string) => {
@@ -82,8 +87,8 @@ const PaymentForm = ({ merchantAddress }: PaymentFormProps) => {
             onChange={(e) => setSelectedToken(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="ETH">ETH - Ethereum</option>
             <option value="MON">MON - Monad</option>
+            <option value="ETH">ETH - Ethereum</option>
             <option value="USDC">USDC - USD Coin</option>
             <option value="USDT">USDT - Tether</option>
           </select>
