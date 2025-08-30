@@ -1,6 +1,5 @@
 export const CONTRACT_CONFIG = {
-  // This will be updated with actual deployed address
-  PAYMENT_RECEIVER_ADDRESS: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  PAYMENT_RECEIVER_ADDRESS: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x5FbDB2315678afecb367f032d93F642f64180aa3",
   PAYMENT_RECEIVER_ABI: [
     {
       "anonymous": false,
@@ -67,16 +66,28 @@ export const COMMON_TOKENS = {
     name: "Ethereum",
     decimals: 18
   },
+  MON: {
+    address: "0x0000000000000000000000000000000000000000", // Native MON on Monad
+    symbol: "MON", 
+    name: "Monad",
+    decimals: 18
+  },
   USDC: {
-    address: "0xA0b86a33E6411CFf96b9C98E23bD7b3f54f7dea2", // Example address
+    address: "0xf817257fed379853cDe0fa4F97AB987181B1E5Ea", // Monad Testnet USDC
     symbol: "USDC",
     name: "USD Coin",
     decimals: 6
   },
   USDT: {
-    address: "0xdAC17F958D2ee523a2206206994597C13D831ec7", // Example address  
+    address: "0x88b8E2161DEDC77EF4ab7585569D2415a1C1055D", // Monad Testnet USDT
     symbol: "USDT",
     name: "Tether",
     decimals: 6
+  },
+  WETH: {
+    address: "0xB5a30b0FDc5EA94A52fDc42e3E9760Cb8449Fb37", // Monad Testnet WETH
+    symbol: "WETH",
+    name: "Wrapped Ethereum", 
+    decimals: 18
   }
 } as const;

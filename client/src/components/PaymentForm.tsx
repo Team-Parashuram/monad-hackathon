@@ -22,6 +22,7 @@ const PaymentForm = ({ merchantAddress }: PaymentFormProps) => {
   const [selectedToken, setSelectedToken] = useState('ETH')
   const [generatedLink, setGeneratedLink] = useState<PaymentLink | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const handleGenerateLink = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,8 +33,10 @@ const PaymentForm = ({ merchantAddress }: PaymentFormProps) => {
     try {
       const paymentId = uuidv4()
       const tokenData = selectedToken === 'ETH' ? COMMON_TOKENS.ETH : 
+                       selectedToken === 'MON' ? COMMON_TOKENS.MON :
                        selectedToken === 'USDC' ? COMMON_TOKENS.USDC : 
-                       COMMON_TOKENS.USDT
+                       selectedToken === 'USDT' ? COMMON_TOKENS.USDT :
+                       COMMON_TOKENS.ETH // fallback
 
       const link = `${window.location.origin}/pay/${paymentId}`
       
@@ -57,9 +60,14 @@ const PaymentForm = ({ merchantAddress }: PaymentFormProps) => {
     }
   }
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    alert('Link copied to clipboard!')
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      console.error('Failed to copy:', error)
+    }
   }
 
   return (
@@ -75,6 +83,7 @@ const PaymentForm = ({ merchantAddress }: PaymentFormProps) => {
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="ETH">ETH - Ethereum</option>
+            <option value="MON">MON - Monad</option>
             <option value="USDC">USDC - USD Coin</option>
             <option value="USDT">USDT - Tether</option>
           </select>
@@ -106,38 +115,69 @@ const PaymentForm = ({ merchantAddress }: PaymentFormProps) => {
       </form>
 
       {generatedLink && (
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <h4 className="font-semibold mb-3">Payment Link Generated</h4>
+        <div className="mt-6 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+          <div className="flex items-center mb-4">
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h4 className="font-semibold text-green-800">Payment Link Generated!</h4>
+          </div>
           
-          <div className="space-y-3">
-            <div>
-              <p className="text-sm font-medium text-gray-700">Payment Details:</p>
+          <div className="space-y-4">
+            <div className="bg-white p-3 rounded-md">
+              <p className="text-sm font-medium text-gray-700 mb-1">Payment Details:</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {generatedLink.amount} {generatedLink.tokenSymbol}
+              </p>
               <p className="text-sm text-gray-600">
-                {generatedLink.amount} {generatedLink.tokenSymbol} to {merchantAddress.slice(0, 6)}...{merchantAddress.slice(-4)}
+                To: {merchantAddress.slice(0, 8)}...{merchantAddress.slice(-6)}
               </p>
             </div>
 
             <div>
-              <p className="text-sm font-medium text-gray-700">Payment Link:</p>
+              <p className="text-sm font-medium text-gray-700 mb-2">Share Payment Link:</p>
               <div className="flex items-center space-x-2">
                 <input
                   type="text"
                   value={generatedLink.link}
                   readOnly
-                  className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded bg-white"
+                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white font-mono"
                 />
                 <button
                   onClick={() => copyToClipboard(generatedLink.link)}
-                  className="px-3 py-1 text-sm bg-gray-600 hover:bg-gray-700 text-white rounded"
+                  className={`px-4 py-2 text-sm rounded-md transition-colors ${
+                    copied 
+                      ? 'bg-green-600 text-white' 
+                      : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  }`}
                 >
-                  Copy
+                  {copied ? 'Copied!' : 'Copy'}
                 </button>
               </div>
             </div>
 
             <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">QR Code:</p>
-              <QRCodeGenerator value={generatedLink.link} />
+              <QRCodeGenerator 
+                value={generatedLink.link} 
+                title="Scan to Pay"
+                size={200}
+              />
+            </div>
+
+            <div className="text-center">
+              <a 
+                href={generatedLink.link}
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium transition-colors"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Test Payment Link
+              </a>
             </div>
           </div>
         </div>
