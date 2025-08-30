@@ -1,0 +1,11 @@
+ pnpm init
+ pnpm install --save-dev hardhat
+ npx hardhat --init
+ npx hardhat compile
+ npx hardhat test
+ npx hardhat coverage
+
+
+npx hardhat node
+npx hardhat ignition deploy ./ignition/modules/Counter.js --network localhost
+ 

@@ -3,12 +3,8 @@
 
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
-const JAN_1ST_2030 = 1893456000;
-const ONE_GWEI = 1_000_000_000n;
+export default buildModule("PaymentReceiverModule", (m) => {
+  const paymentReceiver = m.contract("PaymentReceiver");
 
-
-export default buildModule("CounterModule", (m) => {
-  const counter = m.contract("Counter");
-
-  return { counter };
+  return { paymentReceiver };
 });
